@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import Editor from './components/Editor';
 import Preview from './components/Preview';
+import ToggleButton from './components/ToggleButton';
 import Footer from './components/Footer';
 
 
@@ -51,17 +52,49 @@ Markdown parsed with **[Marked.js](https://marked.js.org/#/README.md#README.md)*
 
 function App() {
   const [markdown, setMarkdown] = useState(placeholder);
+  const [editor, setEditor] = useState(true);
+  const [preview, setPreview] = useState(true);
+  const [button, setButton] = useState(false);
+
+  const toggleView = () => {
+      // If window < 992px, show editor and toggle button, hide preview
+    if (window.innerWidth < 992) {
+      setEditor(true);
+      setPreview(false);
+      setButton(true);
+
+      // If window >= 992px, show editor and preview, hide toggle button
+    } else {
+      setEditor(true);
+      setPreview(true);
+      setButton(false);
+    }
+  };
+
+  useEffect(() => {
+    toggleView();
+
+      // Set cursor to beginning of textarea
+    let editor = document.querySelector('#editor');
+    editor.setSelectionRange(0, 0);
+    editor.focus();
+  }, []);
+
+  window.addEventListener('resize', () => {
+    toggleView();
+  });
 
   const handleChange = evt => {
     setMarkdown(evt.target.value);
   };
 
   return (
-    <div className="container-fluid">
+    <div className="container-fluid p-0">
       <Header />
       <div className="row m-0 no-gutters position-relative">
-        <Editor markdown={markdown} handleChange={handleChange} />
-        <Preview markdown={markdown} />
+        {editor && <Editor markdown={markdown} handleChange={handleChange} />}
+        {preview && <Preview markdown={markdown} />}
+        {button && <ToggleButton editor={editor} preview={preview} setEditor={setEditor} setPreview={setPreview} />}
       </div>
       <Footer />
     </div>
